@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Reader with Highlighted Speech</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Upload and Listen to Your Document</h1>
+
+        <div id="uploadSection">
+            <input type="file" id="file-input" name="file">
+            <button id="upload-btn">Upload</button>
+        </div>
+
+        <!-- Document Display Box -->
+        <div id="contentBox">
+            <h2>Extracted Document Content</h2>
+            <p id="extracted-text"></p>
+        </div>
+
+        <!-- Audio & Controls -->
+        <div id="buttons">
+            <button id="listen">🔊 Listen</button>
+            <button id="pause">⏸ Pause</button>
+            <button id="play">▶ Play</button>
+        </div>
+    </div>
+
+    <script>
+        let extractedText = "";
+        let speech = window.speechSynthesis;
+        let utterance;
+        let words;
+        let currentIndex = 0;
+        let isPaused = false;
+
+        document.getElementById("upload-btn").addEventListener("click", function() {
+            const fileInput = document.getElementById("file-input").files[0];
+            if (!fileInput) {
+                alert("Please select a file first!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput);
+
+            fetch("/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    extractedText = data.text;
+                    document.getElementById("extracted-text").innerHTML = extractedText.split(" ").map(word => `<span>${word}</span>`).join(" ");
+                    document.getElementById("contentBox").style.display = "block";
+                    document.getElementById("buttons").style.display = "flex";
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
+
+        function highlightWord(index) {
+            let spans = document.getElementById("extracted-text").querySelectorAll("span");
+            spans.forEach(span => span.style.backgroundColor = "transparent");
+            if (index < spans.length) {
+                spans[index].style.backgroundColor = "#73C2FB"; // Blue highlighter
+            }
+        }
+
+        function speakText() {
+            if (speech.speaking) {
+                speech.cancel(); // Stop any ongoing speech
+            }
+
+            words = extractedText.split(" ");
+            currentIndex = 0;
+            isPaused = false;
+            utterance = new SpeechSynthesisUtterance(extractedText);
+            utterance.rate = 1; // Normal speed
+
+            utterance.onstart = () => {
+                console.log("Speech started");
+                highlightWord(currentIndex);
+            };
+
+            utterance.onend = () => {
+                console.log("Speech finished");
+                currentIndex = 0;
+            };
+
+            utterance.onboundary = (event) => {
+                let charIndex = event.charIndex;
+                let wordArray = extractedText.substring(0, charIndex).split(" ");
+                currentIndex = wordArray.length;
+                highlightWord(currentIndex);
+            };
+
+            speech.speak(utterance);
+        }
+
+        document.getElementById("listen").addEventListener("click", () => {
+            speakText();
+        });
+
+        document.getElementById("play").addEventListener("click", () => {
+            if (isPaused) {
+                speech.resume();
+                isPaused = false;
+            }
+        });
+
+        document.getElementById("pause").addEventListener("click", () => {
+            if (speech.speaking) {
+                speech.pause();
+                isPaused = true;
+            }
+        });
+    </script>
+</body>
+</html>

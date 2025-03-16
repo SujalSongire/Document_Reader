@@ -1,0 +1,96 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+h1 {
+    color: #002D62;
+    background: #73C2FB;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#uploadSection {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input[type="file"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #fff;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: 1px solid #002D62;
+    cursor: pointer;
+    border-radius: 5px;
+    background: #73C2FB;
+    color: #002D62;
+    transition: 0.3s;
+    font-weight: bold;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+/* Scrollable Document Box */
+#contentBox {
+    display: none;
+    width: 70vw;
+    height: 50vh;
+    overflow-y: auto;
+    padding: 15px;
+    background: white;
+    border: 2px solid #002D62;
+    text-align: left;
+    margin: auto;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Blue Highlighting for Spoken Words */
+#extracted-text span {
+    transition: background-color 0.3s ease;
+    padding: 2px;
+    background-color: transparent;
+}
+
+/* Custom Scrollbar */
+#contentBox::-webkit-scrollbar {
+    width: 10px;
+}
+
+#contentBox::-webkit-scrollbar-track {
+    background: #f8f9fa;
+}
+
+#contentBox::-webkit-scrollbar-thumb {
+    background: #002D62;
+    border-radius: 10px;
+}
+
+/* Audio Control Buttons */
+#buttons {
+    display: none;
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+}
