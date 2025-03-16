@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>📖 Upload & Listen to Your Document</h1>
+        <h1>Upload and Listen to Your Document</h1>
 
         <div id="uploadSection">
             <input type="file" id="file-input" name="file">
@@ -17,7 +17,7 @@
 
         <!-- Document Display Box -->
         <div id="contentBox">
-            <h2>📄 Extracted Document Content</h2>
+            <h2>Extracted Document Content</h2>
             <p id="extracted-text"></p>
         </div>
 
@@ -37,10 +37,11 @@
         let currentIndex = 0;
         let isPaused = false;
 
+        // Upload button event
         document.getElementById("upload-btn").addEventListener("click", function() {
             const fileInput = document.getElementById("file-input").files[0];
             if (!fileInput) {
-                alert("⚠ Please select a file first!");
+                alert("Please select a file first!");
                 return;
             }
 
@@ -54,7 +55,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    alert("❌ Error: " + data.error);
+                    alert(data.error);
                 } else {
                     extractedText = data.text;
                     document.getElementById("extracted-text").innerHTML = extractedText.split(" ").map(word => `<span>${word}</span>`).join(" ");
@@ -65,6 +66,7 @@
             .catch(error => console.error("Error:", error));
         });
 
+        // Highlight words while speaking
         function highlightWord(index) {
             let spans = document.getElementById("extracted-text").querySelectorAll("span");
             spans.forEach(span => span.style.backgroundColor = "transparent");
@@ -73,6 +75,7 @@
             }
         }
 
+        // Text-to-Speech Function
         function speakText() {
             if (speech.speaking) {
                 speech.cancel(); // Stop any ongoing speech
@@ -82,7 +85,13 @@
             currentIndex = 0;
             isPaused = false;
             utterance = new SpeechSynthesisUtterance(extractedText);
-            utterance.rate = 1; // Normal speed
+
+            // 🔹 Adjust speech rate for mobile devices
+            if (/Mobi|Android/i.test(navigator.userAgent)) {
+                utterance.rate = 0.8; // Slower for mobile
+            } else {
+                utterance.rate = 1.0; // Normal speed for desktop
+            }
 
             utterance.onstart = () => {
                 console.log("Speech started");
@@ -104,6 +113,7 @@
             speech.speak(utterance);
         }
 
+        // Button Event Listeners
         document.getElementById("listen").addEventListener("click", () => {
             speakText();
         });
