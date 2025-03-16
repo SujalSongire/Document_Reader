@@ -1,10 +1,8 @@
 from flask import Flask, render_template, request, jsonify, send_file
 import fitz  # PyMuPDF for PDF text extraction
 import os
+import gtts  # Google Text-to-Speech
 import logging
-import pyttsx3
-from werkzeug.utils import secure_filename
-from docx import Document
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
@@ -29,48 +27,37 @@ def upload():
     if file.filename == "":
         return jsonify({"error": "No selected file"}), 400
 
-    file_path = os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(file.filename))
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
     file.save(file_path)
     logging.info(f"File uploaded: {file.filename}")
 
     try:
         extracted_text = extract_text(file_path)
-        if not extracted_text.strip():
-            return jsonify({"error": "No text found in document"}), 400
-
-        audio_file = generate_audio(extracted_text, file.filename)
-        return jsonify({"text": extracted_text, "audio": f"/get_audio/{audio_file}"})
-
+        return jsonify({"text": extracted_text})
     except Exception as e:
         logging.error(f"Error extracting text: {e}")
         return jsonify({"error": "Failed to extract text"}), 500
 
 
-def extract_text(file_path):
-    text = ""
-    if file_path.endswith(".pdf"):
-        doc = fitz.open(file_path)
-        text = "\n".join([page.get_text("text") for page in doc])
-    elif file_path.endswith(".docx"):
-        doc = Document(file_path)
-        text = "\n".join([para.text for para in doc.paragraphs])
-    elif file_path.endswith(".txt"):
-        with open(file_path, "r", encoding="utf-8") as f:
-            text = f.read()
+def extract_text(pdf_path):
+    doc = fitz.open(pdf_path)
+    text = "\n".join([page.get_text("text") for page in doc])
     return text
 
 
-def generate_audio(text, filename):
-    audio_path = os.path.join(app.config["UPLOAD_FOLDER"], filename.rsplit(".", 1)[0] + ".mp3")
-    engine = pyttsx3.init()
-    engine.save_to_file(text, audio_path)
-    engine.runAndWait()
-    return os.path.basename(audio_path)
+@app.route("/speak", methods=["POST"])
+def speak():
+    data = request.json
+    text = data.get("text", "")
 
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
 
-@app.route("/get_audio/<filename>")
-def get_audio(filename):
-    return send_file(os.path.join(app.config["UPLOAD_FOLDER"], filename), as_attachment=True)
+    tts = gtts.gTTS(text)
+    audio_path = "static/output.mp3"
+    tts.save(audio_path)
+
+    return jsonify({"audio_url": audio_path})
 
 
 if __name__ == "__main__":

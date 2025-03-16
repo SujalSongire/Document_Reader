@@ -8,16 +8,16 @@
 </head>
 <body>
     <div class="container">
-        <h1>Upload and Listen to Your Document</h1>
+        <h1>📖 Upload & Listen to Your Document</h1>
 
         <div id="uploadSection">
             <input type="file" id="file-input" name="file">
-            <button id="upload-btn">Upload</button>
+            <button id="upload-btn">📤 Upload</button>
         </div>
 
         <!-- Document Display Box -->
         <div id="contentBox">
-            <h2>Extracted Document Content</h2>
+            <h2>📄 Extracted Document Content</h2>
             <p id="extracted-text"></p>
         </div>
 
@@ -40,7 +40,7 @@
         document.getElementById("upload-btn").addEventListener("click", function() {
             const fileInput = document.getElementById("file-input").files[0];
             if (!fileInput) {
-                alert("Please select a file first!");
+                alert("⚠ Please select a file first!");
                 return;
             }
 
@@ -54,7 +54,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    alert(data.error);
+                    alert("❌ Error: " + data.error);
                 } else {
                     extractedText = data.text;
                     document.getElementById("extracted-text").innerHTML = extractedText.split(" ").map(word => `<span>${word}</span>`).join(" ");
